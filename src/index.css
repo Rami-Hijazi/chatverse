@@ -1,0 +1,589 @@
+/* src/App.css */
+:root {
+  --bg-color: #0f172a;
+  --text-color: #e2e8f0;
+  --accent-color: #38bdf8;       /* Sky Blue */
+  --accent-glow: rgba(56, 189, 248, 0.3);
+  --secondary-color: #1e293b;
+  --glass-bg: rgba(15, 23, 42, 0.7); /* Semi-transparent for navbar */
+}
+
+/* --- GLOBAL RESET & ANIMATED BACKGROUND --- */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text-color);
+  overflow-x: hidden;
+  /* Complex gradient for a "livable" feel */
+  background: radial-gradient(circle at top left, #1e1b4b, transparent 40%),
+              radial-gradient(circle at bottom right, #1e293b, transparent 40%),
+              #0f172a; /* Base dark color */
+  background-attachment: fixed; /* Keeps background still while scrolling */
+}
+
+.App {
+  min-height: 100vh;
+}
+
+/* --- NAVIGATION BAR (Glass Effect) --- */
+nav {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* Reduced padding to make the bar shorter */
+  padding: 0.5rem 5%; 
+  box-sizing: border-box;
+  z-index: 1000;
+  
+  /* Glassmorphism Design */
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo {
+  /* Slightly smaller font to fit the slimmer bar */
+  font-size: 1.5rem; 
+  font-weight: 800;
+  color: var(--accent-color);
+  text-shadow: 0 0 10px var(--accent-glow);
+  letter-spacing: 1px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.nav-links a {
+  color: var(--text-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  font-size: 0.95rem; /* Slightly smaller text */
+}
+
+.nav-links a:hover {
+  color: var(--accent-color);
+}
+
+/* Specific rule to make the button inside the navbar smaller than the main hero buttons */
+nav .btn-primary {
+    padding: 0.5rem 1.2rem;
+    font-size: 0.9rem;
+}
+
+/* --- BUTTONS --- */
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-color), #0284c7);
+  color: #fff;
+  padding: 0.8rem 1.8rem;
+  border-radius: 50px;
+  text-decoration: none;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 15px var(--accent-glow);
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px var(--accent-glow);
+}
+
+/* --- HERO SECTION --- */
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 150px 10% 100px; /* Top padding accounts for fixed navbar */
+  min-height: 80vh;
+}
+
+.hero-content {
+  flex: 1;
+  max-width: 600px;
+  animation: fadeLeft 1s ease forwards;
+  opacity: 0;
+  padding-right: 50px; /* Ensures text doesn't hit the image */
+}
+
+.hero h1 {
+  font-size: 4rem;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  font-weight: 800;
+}
+
+.highlight {
+  color: transparent;
+  background: linear-gradient(90deg, var(--accent-color), #a855f7);
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
+.hero p {
+  font-size: 1.25rem;
+  color: #94a3b8;
+  margin-bottom: 3rem; /* More space before the big button */
+  line-height: 1.6;
+}
+
+.hero-image {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  animation: fadeUp 1s ease forwards 0.3s;
+  opacity: 0;
+}
+
+.mockup-container {
+  width: 450px;
+  height: 350px;
+  background: rgba(30, 41, 59, 0.6);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  animation: float 6s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes fadeLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- CHAT STYLES (Kept for later use) --- */
+.chat-container {
+    /* We will use these in Phase 4 */
+    display: none; 
+}
+
+/* --- MODAL (POPUP) STYLES --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8); /* Dark background dimming */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background: #1e293b;
+  padding: 2rem;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  animation: fadeUp 0.3s ease forwards;
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  color: white;
+}
+
+.nickname-input {
+  width: 100%;
+  padding: 12px;
+  margin: 20px 0;
+  border-radius: 10px;
+  border: 2px solid #334155;
+  background: #0f172a;
+  color: white;
+  font-size: 1.1rem;
+  outline: none;
+  box-sizing: border-box; /* Fixes padding issues */
+}
+
+.nickname-input:focus {
+  border-color: var(--accent-color);
+}
+
+.error-msg {
+  color: #ef4444; /* Red color for errors */
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.btn-cancel {
+  background: transparent;
+  border: 1px solid #475569;
+  color: #94a3b8;
+  padding: 0.8rem 1.5rem;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-cancel:hover {
+  background: rgba(255,255,255,0.05);
+  color: white;
+}
+
+/* --- PHASE 4: WHATSAPP INTERFACE --- */
+
+.chat-app {
+  display: flex;
+  height: 100vh; /* Full screen */
+  background-color: #0c1317; /* Very dark background */
+  color: #e9edef;
+  font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+  overflow: hidden;
+}
+
+/* --- SIDEBAR (Left Side) --- */
+.sidebar {
+  width: 35%;
+  max-width: 450px;
+  background-color: #111b21;
+  border-right: 1px solid #202c33;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  height: 60px;
+  background-color: #202c33;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.search-container {
+  padding: 8px 12px;
+  background-color: #111b21;
+  border-bottom: 1px solid #202c33;
+}
+
+.search-input {
+  width: 100%;
+  background-color: #202c33;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 15px; /* Compact padding */
+  padding-left: 35px; /* Space for icon */
+  color: #e9edef;
+  font-size: 0.9rem;
+  height: 35px; /* Explicit height */
+  box-sizing: border-box; /* Ensures padding doesn't increase width */
+}
+
+.search-input::placeholder {
+  color: #8696a0;
+}
+
+.contact-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid #202c33;
+}
+
+.contact-item:hover {
+  background-color: #202c33;
+}
+
+.contact-info {
+  margin-left: 15px;
+  flex: 1;
+}
+
+.contact-name {
+  font-size: 1.1rem;
+  color: #e9edef;
+  margin-bottom: 3px;
+}
+
+.contact-status {
+  font-size: 0.85rem;
+  color: #8696a0;
+}
+
+/* --- MAIN CHAT AREA (Right Side) --- */
+.chat-window {
+  flex: 1; /* Takes remaining space */
+  display: flex;
+  flex-direction: column;
+  background-color: #0b141a;
+  position: relative;
+  /* Optional: Add the WhatsApp doodle pattern here if you have the image */
+}
+
+.chat-header {
+  height: 60px;
+  background-color: #202c33;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid #2a3942;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 20px 5%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); /* Subtle pattern */
+  background-repeat: repeat;
+  background-size: 400px;
+  opacity: 0.9;
+}
+
+.message-bubble {
+  max-width: 60%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  position: relative;
+  word-wrap: break-word;
+}
+
+.my-message {
+  align-self: flex-end;
+  background-color: #005c4b; /* WhatsApp Green */
+  color: #e9edef;
+  border-top-right-radius: 0;
+}
+
+.their-message {
+  align-self: flex-start;
+  background-color: #202c33; /* Dark Gray */
+  color: #e9edef;
+  border-top-left-radius: 0;
+}
+
+.chat-input-area {
+  height: 62px;
+  background-color: #202c33;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.message-input {
+  flex: 1;
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: none;
+  background-color: #2a3942;
+  color: #e9edef;
+  font-size: 1rem;
+  outline: none;
+}
+
+/* Add to bottom of App.css */
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    color: #aebac1;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.btn-icon:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--accent-color);
+}
+
+/* --- GOOGLE-STYLE ACCOUNT CHOOSER --- */
+.google-btn {
+  background: white;
+  color: #3c4043;
+  border: 1px solid #dadce0;
+  border-radius: 4px; /* Slightly more square like Google */
+  padding: 10px 20px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.google-btn:hover {
+  background-color: #f7f8f8;
+  border-color: #d2e3fc;
+}
+
+.account-chooser {
+  text-align: left;
+  width: 100%;
+}
+
+.account-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  border-bottom: 1px solid #f1f3f4;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.account-item:hover {
+  background-color: #f5f5f5;
+}
+
+.account-item:last-child {
+  border-bottom: none;
+}
+
+.account-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #a0c3ff; /* Fallback color */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #1a73e8;
+  margin-right: 15px;
+}
+
+.account-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.account-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #202124;
+}
+
+.account-email {
+  font-size: 0.8rem;
+  color: #5f6368;
+}
+
+.use-another-account {
+  padding: 15px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #5f6368;
+  cursor: pointer;
+  border-top: 1px solid #f1f3f4;
+}
+.use-another-account:hover {
+  background-color: #f5f5f5;
+}
+
+.requests-section {
+    background-color: #202c33;
+    border-bottom: 1px solid #374045;
+    padding: 10px;
+}
+
+.section-title {
+    color: #00a884;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.request-item {
+    display: flex;
+    align-items: center;
+    background: #111b21;
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 5px;
+}
+
+.user-avatar-small {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+}
+
+.req-name {
+    font-size: 0.9rem;
+    color: #e9edef;
+}
+
+.btn-accept, .btn-reject {
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    margin-left: 5px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-accept {
+    background-color: #00a884;
+    color: white;
+}
+
+.btn-reject {
+    background-color: #ef4444;
+    color: white;
+}
