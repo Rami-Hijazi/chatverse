@@ -587,3 +587,68 @@ nav .btn-primary {
     background-color: #ef4444;
     color: white;
 }
+
+.btn-back {
+  display: none; /* Desktop: Hide */
+}
+
+/* 2. Mobile Rules */
+@media (max-width: 768px) {
+  
+  /* --- HOME PAGE MOBILE --- */
+  .hero {
+    flex-direction: column; /* Stack items vertically */
+    text-align: center;     /* Center text */
+    padding-top: 100px;
+    height: auto;
+  }
+
+  .hero-content {
+    padding-right: 0;
+    margin-bottom: 40px;
+  }
+
+  .hero h1 {
+    font-size: 2.5rem; /* Smaller text for phone */
+  }
+
+  .mockup-container {
+    width: 90vw; /* Image takes full width */
+    height: 250px;
+  }
+
+  /* --- CHAT INTERFACE MOBILE --- */
+  
+  /* By default on mobile: Sidebar is 100%, Chat is Hidden */
+  .sidebar {
+    width: 100%;
+    max-width: none;
+    border-right: none;
+  }
+
+  .chat-window {
+    display: none; /* Hide chat initially */
+    width: 100%;
+  }
+
+  /* WHEN CHAT IS OPEN (We will toggle this class in React) */
+  .chat-app.mobile-chat-open .sidebar {
+    display: none; /* Hide sidebar */
+  }
+
+  .chat-app.mobile-chat-open .chat-window {
+    display: flex; /* Show chat */
+  }
+
+  /* Show the Back Button on Mobile */
+  .btn-back {
+    display: block;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    margin-right: 15px;
+    cursor: pointer;
+    padding: 0;
+  }
+}

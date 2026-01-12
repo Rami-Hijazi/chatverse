@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import './App.css'; 
 
-// --- FIREBASE IMPORTS ---
 import { signInWithPopup, onAuthStateChanged, signOut } from "firebase/auth";
 import { 
     doc, setDoc, getDoc, updateDoc, arrayUnion, onSnapshot, 
@@ -11,45 +10,37 @@ import {
 } from "firebase/firestore"; 
 import { auth, googleProvider, db } from "./firebase"; 
 
-// Connect to backend (Online Status)
+// Use Env variable or localhost
 const BACKEND_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 const socket = io(BACKEND_URL);
 
 function App() {
   const [user, setUser] = useState(null); 
-  const [loading, setLoading] = useState(true); // NEW: Prevents "Home Page" flash
+  const [loading, setLoading] = useState(true); 
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
   
-  // Data State
   const [friends, setFriends] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]); 
   const [selectedUser, setSelectedUser] = useState(null);
   
-  // Chat State
   const [messages, setMessages] = useState({}); 
   const [currentMessage, setCurrentMessage] = useState("");
 
-  // Input State
   const [targetEmail, setTargetEmail] = useState("");
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
-  // --- 0. RESTORE SESSION ON REFRESH ---
+  // --- 0. RESTORE SESSION ---
   useEffect(() => {
-    // Firebase listener: Checks if you have a cookie/session saved
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
         if (currentUser) {
-            // User is logged in! Fetch their ChatVerse profile.
             try {
                 const docRef = doc(db, "users", currentUser.email);
                 const docSnap = await getDoc(docRef);
-
                 let userProfile;
-                
                 if (docSnap.exists()) {
                     userProfile = docSnap.data();
                 } else {
-                    // Fallback if DB data is missing
                     userProfile = {
                         email: currentUser.email,
                         nickname: currentUser.displayName || currentUser.email.split('@')[0],
@@ -57,39 +48,30 @@ function App() {
                         uid: currentUser.uid
                     };
                 }
-
-                // Restore App State
                 setUser(userProfile);
-                
-                // Reconnect to Socket (Server needs to know we are back online)
                 socket.emit('login_request', userProfile);
-
             } catch (err) {
                 console.error("Session restore error:", err);
             }
         } else {
-            // User is definitely logged out
             setUser(null);
         }
-        setLoading(false); // Finished checking
+        setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 
-  // --- 1. HANDLE LOGIN & SAVE TO DB ---
+  // --- 1. HANDLE LOGIN ---
   const handleGoogleLogin = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const u = result.user;
-      
       const userProfile = {
         email: u.email,
         nickname: u.displayName || u.email.split('@')[0],
         avatar: u.photoURL,
         uid: u.uid
       };
-
       await setDoc(doc(db, "users", u.email), userProfile, { merge: true });
       socket.emit('login_request', userProfile);
       setUser(userProfile);
@@ -103,26 +85,21 @@ function App() {
       signOut(auth);
       setUser(null);
       setSelectedUser(null);
-      // Socket disconnect is automatic
   };
 
-  // --- 2. LISTEN TO USER DATA ---
+  // --- 2. LISTEN TO DATA ---
   useEffect(() => {
     if (!user) return;
-
     const unsub = onSnapshot(doc(db, "users", user.email), async (docSnap) => {
         if (docSnap.exists()) {
             const data = docSnap.data();
             setFriendRequests(data.requests || []);
-
             const friendEmails = data.friends || [];
             if (friendEmails.length > 0) {
                 const friendsData = [];
                 for (const email of friendEmails) {
                     const fSnap = await getDoc(doc(db, "users", email));
-                    if (fSnap.exists()) {
-                        friendsData.push(fSnap.data());
-                    }
+                    if (fSnap.exists()) friendsData.push(fSnap.data());
                 }
                 setFriends(friendsData);
             } else {
@@ -130,107 +107,64 @@ function App() {
             }
         }
     });
-
     return () => unsub();
   }, [user]);
 
-  // --- 3. SEND FRIEND REQUEST ---
+  // --- 3. ACTIONS ---
   const sendFriendRequest = async () => {
     if (!targetEmail.trim()) return;
     if (targetEmail === user.email) { setError("Can't add yourself."); return; }
-    
-    setError("");
-    setSuccessMsg("");
-
+    setError(""); setSuccessMsg("");
     try {
         const targetRef = doc(db, "users", targetEmail);
         const targetSnap = await getDoc(targetRef);
-
-        if (!targetSnap.exists()) {
-            setError("User does not exist yet.");
-            return;
-        }
-
+        if (!targetSnap.exists()) { setError("User does not exist yet."); return; }
         const targetData = targetSnap.data();
-        if (targetData.friends?.includes(user.email)) {
-            setError("Already friends.");
-            return;
-        }
-
+        if (targetData.friends?.includes(user.email)) { setError("Already friends."); return; }
         await updateDoc(targetRef, {
-            requests: arrayUnion({
-                email: user.email,
-                nickname: user.nickname,
-                avatar: user.avatar
-            })
+            requests: arrayUnion({ email: user.email, nickname: user.nickname, avatar: user.avatar })
         });
-
-        setSuccessMsg("Request Sent!");
-        setTargetEmail("");
+        setSuccessMsg("Request Sent!"); setTargetEmail("");
         setTimeout(() => setSuccessMsg(""), 3000);
-
-    } catch (err) {
-        console.error(err);
-        setError("Error: " + err.message);
-    }
+    } catch (err) { setError("Error: " + err.message); }
   };
 
-  // --- 4. RESPOND TO REQUEST ---
   const respondToRequest = async (requesterEmail, action) => {
     try {
         const myRef = doc(db, "users", user.email);
         const requesterRef = doc(db, "users", requesterEmail);
-
         const mySnap = await getDoc(myRef);
         const currentRequests = mySnap.data().requests || [];
         const updatedRequests = currentRequests.filter(r => r.email !== requesterEmail);
-
         await updateDoc(myRef, { requests: updatedRequests });
-
         if (action === 'accept') {
             await updateDoc(myRef, { friends: arrayUnion(requesterEmail) });
             await updateDoc(requesterRef, { friends: arrayUnion(user.email) });
         }
-
-    } catch (err) {
-        console.error(err);
-        alert("Error: " + err.message);
-    }
+    } catch (err) { alert("Error: " + err.message); }
   };
 
-  // --- 5. MESSAGING VIA DATABASE ---
-  const getChatId = (email1, email2) => {
-    return [email1, email2].sort().join("_");
-  };
+  const getChatId = (email1, email2) => [email1, email2].sort().join("_");
 
   useEffect(() => {
     if (!selectedUser || !user) return;
-
     const chatId = getChatId(user.email, selectedUser.email);
     const msgsRef = collection(db, "chats", chatId, "messages");
     const q = query(msgsRef, orderBy("createdAt", "asc"));
-
     const unsub = onSnapshot(q, (snapshot) => {
         const loadedMsgs = snapshot.docs.map(doc => ({
             text: doc.data().text,
             isMe: doc.data().senderEmail === user.email
         }));
-        
-        setMessages(prev => ({
-            ...prev,
-            [selectedUser.email]: loadedMsgs
-        }));
+        setMessages(prev => ({ ...prev, [selectedUser.email]: loadedMsgs }));
     });
-
     return () => unsub();
   }, [selectedUser, user]);
 
   const sendMessage = async () => {
     if (!currentMessage.trim() || !selectedUser) return;
-
     const chatId = getChatId(user.email, selectedUser.email);
     const msgsRef = collection(db, "chats", chatId, "messages");
-
     try {
         await addDoc(msgsRef, {
             text: currentMessage,
@@ -238,30 +172,20 @@ function App() {
             createdAt: new Date()
         });
         setCurrentMessage("");
-    } catch (err) {
-        console.error("Error sending message:", err);
-    }
+    } catch (err) { console.error("Error sending message:", err); }
   };
 
 
   // --- RENDER ---
-
-  // 1. LOADING SCREEN
   if (loading) {
-      return (
-          <div style={{
-              height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-              background: '#0f172a', color: 'white', fontSize: '1.5rem'
-          }}>
-              Loading ChatVerse...
-          </div>
-      );
+      return <div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f172a', color: 'white', fontSize: '1.5rem'}}>Loading ChatVerse...</div>;
   }
 
-  // 2. CHAT APP
   if (user) {
     return (
-      <div className="chat-app">
+      // NEW: Added 'mobile-chat-open' class conditionally
+      <div className={`chat-app ${selectedUser ? 'mobile-chat-open' : ''}`}>
+        
         {/* SIDEBAR */}
         <div className="sidebar">
           <div className="sidebar-header">
@@ -269,16 +193,12 @@ function App() {
                 <img src={user.avatar} alt="Me" className="user-avatar" referrerPolicy="no-referrer" />
                 <div style={{marginLeft:'10px'}}>
                     <div style={{fontWeight: 'bold'}}>{user.nickname}</div>
-                    <button onClick={handleLogout} style={{
-                        background:'none', border:'none', color:'#ef4444', 
-                        cursor:'pointer', fontSize:'0.8rem', padding:'0'
-                    }}>Log Out</button>
+                    <button onClick={handleLogout} style={{background:'none', border:'none', color:'#ef4444', cursor:'pointer', fontSize:'0.8rem', padding:'0'}}>Log Out</button>
                 </div>
             </div>
-            <button className="btn-icon" onClick={() => setShowAddFriendModal(true)} title="Add Friend">➕</button>
+            <button className="btn-icon" onClick={() => setShowAddFriendModal(true)}>➕</button>
           </div>
 
-          {/* REQUESTS */}
           {friendRequests.length > 0 && (
             <div className="requests-section">
                 <div className="section-title">Friend Requests</div>
@@ -295,7 +215,6 @@ function App() {
 
           <div className="search-container"><input type="text" placeholder="Search friends..." className="search-input" /></div>
 
-          {/* FRIENDS */}
           <div className="contact-list">
             {friends.map((friend, index) => (
                 <div key={index} 
@@ -317,6 +236,9 @@ function App() {
            {selectedUser ? (
              <>
                <div className="chat-header">
+                  {/* NEW: Back Button (Only visible on mobile via CSS) */}
+                  <button className="btn-back" onClick={() => setSelectedUser(null)}>←</button>
+                  
                   <img src={selectedUser.avatar} className="user-avatar" referrerPolicy="no-referrer" />
                   <div className="contact-info">
                     <div className="contact-name">{selectedUser.nickname}</div>
@@ -365,7 +287,6 @@ function App() {
     );
   }
 
-  // 3. HOME PAGE (Only if user is null AND not loading)
   return (
     <div className="App">
       <nav><div className="logo">ChatVerse</div><div className="nav-links"><button className="btn-primary" onClick={handleGoogleLogin}>Sign In</button></div></nav>
